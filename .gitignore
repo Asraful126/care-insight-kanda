@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Raw downloaded data (re-downloadable; see docs/data-sources.md)
+data/raw/
+
+# Project-local Azure CLI profile (holds tokens)
+.azure/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Assistant logs (may contain questions/answers)
+logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
