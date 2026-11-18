@@ -21,6 +21,28 @@ set, and (in progress) **Power BI with row-level security** and a **containerise
 | Docker → Azure Container Apps, GitHub Actions CI/CD | In progress |
 | Governance doc, architecture diagram, demo video | In progress |
 
+## What you can do with the assistant
+
+![The assistant answering a question about NDIS participants in Queensland, with a citation](docs/images/chat-data.png)
+
+Ask in plain English, and get an answer with its source:
+
+- **Explore NDIS statistics**: active participants, average plan budgets, plan utilisation and provider numbers
+  by state and service district (Sep 2025 and Sep 2026), broken down by disability group, age band or support class,
+  plus participants by SA3 every quarter since 2019.
+- **Explore aged care at home**: people in Home Care Packages (by level) and people served by the Commonwealth
+  Home Support Programme, by LGA, SA3, planning region or PHN.
+- **Compare and track change**: year-on-year change and % growth, highest and lowest regions, one region against another.
+- **Ask about the quality standards**: what the NDIS Practice Standards and the Strengthened Aged Care Quality
+  Standards require, with the document and page cited.
+- **Check every answer**: expand **Sources** to see the exact SQL that ran and the rows it returned, or the
+  policy passages found.
+
+It **won't** identify or speculate about individual people or providers, give clinical, legal or funding advice,
+answer beyond its data, or change any data. Hidden small counts are reported as "fewer than N", never guessed.
+
+Full guide with example questions: [docs/user-guide.md](docs/user-guide.md).
+
 ## Architecture
 
 ```text
@@ -126,4 +148,4 @@ the Anthropic key is prepaid with a hard spend limit. One eval run costs about U
 | `eval/` | Questions, runner, latest results |
 | `scripts/` | Download, upload, Fabric API client, notebook deploy/run, SQL access setup |
 | `tests/` | SQL guard unit tests |
-| `docs/` | Data sources, data dictionary, assistant design |
+| `docs/` | User guide, data sources, data dictionary, assistant design |
