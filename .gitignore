@@ -5,6 +5,7 @@
 
 # Raw downloaded data (re-downloadable; see docs/data-sources.md)
 data/raw/
+data/index/
 
 # Project-local Azure CLI profile (holds tokens)
 .azure/
@@ -23,3 +24,6 @@ logs/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Eval run details (full answers); eval/results/latest.md is committed
+eval/results/runs/
