@@ -1,0 +1,5 @@
+# Local tooling for loading the Fabric lakehouse (scripts/). Fabric notebooks use the Fabric runtime.
+azure-identity==1.27.0
+azure-storage-file-datalake==12.26.1
+python-dotenv==1.2.4
+requests==2.34.2
