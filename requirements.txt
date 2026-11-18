@@ -3,3 +3,17 @@ azure-identity==1.27.0
 azure-storage-file-datalake==12.26.1
 python-dotenv==1.2.4
 requests==2.34.2
+
+# Assistant (assistant/, eval/). pyodbc needs the Microsoft ODBC Driver 18 for SQL Server installed.
+anthropic==2.10.0
+pyodbc==5.5.0
+sqlglot==30.33.0
+fastembed==0.9.1
+numpy==2.5.5
+pypdf==7.1.0
+rank-bm25==0.2.2
+streamlit==1.67.0
+PyYAML==6.0.3
+
+# Tests
+pytest==9.2.0
