@@ -81,8 +81,9 @@ def count_cols(raw: Column, name: str) -> list[Column]:
 
 
 def all_flags(cols: dict[str, str]) -> list[Column]:
-    """is_all_<dim> for each bronze column that carries an ALL member."""
-    return [(F.trim(F.col(src)) == "ALL").alias(f"is_all_{name}") for name, src in cols.items()]
+    """is_all_<dim> for each bronze column that carries an ALL member. Never NULL: a blank source
+    value (e.g. the 'Not stated' disability group) is a real member, not a subtotal."""
+    return [F.coalesce(F.trim(F.col(src)) == "ALL", F.lit(False)).alias(f"is_all_{name}") for name, src in cols.items()]
 
 
 LINEAGE = [
