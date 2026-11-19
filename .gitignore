@@ -3,9 +3,9 @@
 .env.*
 !.env.example
 
-# Raw downloaded data (re-downloadable; see docs/data-sources.md)
+# Raw downloaded data (re-downloadable; see docs/data-sources.md). data/index/ IS committed (decision D10 b):
+# CI can't download the policy PDFs (the government sites stall GitHub runners).
 data/raw/
-data/index/
 
 # Project-local Azure CLI profile (holds tokens)
 .azure/

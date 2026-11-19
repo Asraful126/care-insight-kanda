@@ -23,19 +23,12 @@ RUN pip install -r requirements.txt
 
 COPY assistant/ assistant/
 
-# D10 (a): download the two public policy PDFs, check them against the checksums in data/raw/MANIFEST.tsv,
-# and build the index. This also downloads the embedding model into the image, so there's no download at startup.
-# HTTP/1.1 and retries: from CI runners the government sites reset HTTP/2 streams (curl exit 92).
-RUN mkdir -p data/raw/policy \
- && curl -fsSL --http1.1 --retry 3 --retry-all-errors --retry-delay 5 -o data/raw/policy/ndis_practice_standards_v4.pdf \
-      https://www.ndiscommission.gov.au/sites/default/files/2024-10/ndis-practice-standards-and-quality-indicators.pdf \
- && curl -fsSL --http1.1 --retry 3 --retry-all-errors --retry-delay 5 -o data/raw/policy/strengthened_aged_care_quality_standards.pdf \
-      https://www.health.gov.au/sites/default/files/2026-08/strengthened-aged-care-quality-standards_0.pdf \
- && printf '%s  %s\n' \
-      4b32e0bf1a6626b42c27d831d97ff26bca751cf15aed5fa8601657845240d09d data/raw/policy/ndis_practice_standards_v4.pdf \
-      f01bd6d6ff68c364b76f8ebc1cb5ffd9a7ba7dc92324be7c6b14bf4b20c666b7 data/raw/policy/strengthened_aged_care_quality_standards.pdf \
-    | sha256sum -c - \
- && python -m assistant.policy_search build
+# D10 (b): the policy index is committed in data/index/ (rebuilt locally with
+# `python -m assistant.policy_search build` when a PDF changes). The government sites stall downloads from
+# CI runners, so the image doesn't fetch the PDFs. The embedding model is still downloaded here, at build
+# time, so the container needs no download at startup.
+COPY data/index/ data/index/
+RUN python -c "from assistant.policy_search import _embedder; list(_embedder().embed(['warm-up']))"
 
 # Run as a non-root user: if the app were compromised, the attacker isn't root in the container.
 RUN useradd --create-home app && chown -R app /app
