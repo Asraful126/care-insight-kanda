@@ -1,6 +1,59 @@
 /// Grain: report date x region x disability group x age band x support class. Holds ALL subtotals and detail rows: never SUM directly.
 table fact_ndis_plans
 
+	/// Active NDIS participants: the publisher's own cell for the current slice. Selecting several members of one
+	/// cohort dimension adds their detail cells (a lower bound if any are suppressed). Suppressed single cell -> BLANK.
+	measure 'Active participants' =
+			// Published-cell rule (data dictionary decision 2):
+			// - cohort dimension not filtered -> its ALL row; filtered -> its detail rows
+			// - region: the coarsest region type in the current filter context (national when nothing is filtered)
+			// - date: the latest report date in context (counts are quarter-end snapshots, never added over time)
+			VAR _dgAll = NOT ISFILTERED ( dim_disability_group )
+			VAR _abAll = NOT ISFILTERED ( dim_age_band )
+			VAR _scAll = NOT ISFILTERED ( dim_support_class )
+			VAR _level = CALCULATE ( MIN ( dim_region[region_type_order] ), fact_ndis_plans )
+			VAR _date = MAX ( fact_ndis_plans[date_key] )
+			VAR _cells =
+				CALCULATETABLE (
+					fact_ndis_plans,
+					KEEPFILTERS ( dim_region[region_type_order] = _level ),
+					KEEPFILTERS ( dim_date[date_key] = _date ),
+					KEEPFILTERS ( dim_disability_group[is_all] = _dgAll ),
+					KEEPFILTERS ( dim_age_band[is_all] = _abAll ),
+					KEEPFILTERS ( dim_support_class[is_all] = _scAll )
+				)
+			RETURN
+				SUMX ( _cells, fact_ndis_plans[active_participants] )
+		formatString: #,0
+		displayFolder: NDIS
+
+	/// Average annualised committed support budget per participant (A$), as published. Never averaged further:
+	/// BLANK when the slice covers more than one published cell.
+	measure 'Average annualised plan budget' =
+			// Published-cell rule (data dictionary decision 2):
+			// - cohort dimension not filtered -> its ALL row; filtered -> its detail rows
+			// - region: the coarsest region type in the current filter context (national when nothing is filtered)
+			// - date: the latest report date in context (counts are quarter-end snapshots, never added over time)
+			VAR _dgAll = NOT ISFILTERED ( dim_disability_group )
+			VAR _abAll = NOT ISFILTERED ( dim_age_band )
+			VAR _scAll = NOT ISFILTERED ( dim_support_class )
+			VAR _level = CALCULATE ( MIN ( dim_region[region_type_order] ), fact_ndis_plans )
+			VAR _date = MAX ( fact_ndis_plans[date_key] )
+			VAR _cells =
+				CALCULATETABLE (
+					fact_ndis_plans,
+					KEEPFILTERS ( dim_region[region_type_order] = _level ),
+					KEEPFILTERS ( dim_date[date_key] = _date ),
+					KEEPFILTERS ( dim_disability_group[is_all] = _dgAll ),
+					KEEPFILTERS ( dim_age_band[is_all] = _abAll ),
+					KEEPFILTERS ( dim_support_class[is_all] = _scAll )
+				)
+			RETURN
+				// Not additive: show only when exactly one published cell matches; several cells -> BLANK
+				IF ( COUNTROWS ( _cells ) = 1, MAXX ( _cells, fact_ndis_plans[avg_annualised_budget] ) )
+		formatString: \$#,0
+		displayFolder: NDIS
+
 	column date_key
 		dataType: int64
 		isHidden
