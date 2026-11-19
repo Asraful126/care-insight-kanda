@@ -24,6 +24,8 @@ st.caption(
     "Answers from public NDIS and aged care statistics (read-only SQL over the gold layer) and the NDIS "
     "Practice Standards / Strengthened Aged Care Quality Standards. Public aggregate data only."
 )
+# Governance (docs/governance.md, section 5): users are told at the point of entry that questions are logged.
+st.caption("Questions and answers are logged for 30 days for quality review. Don't enter personal information.")
 
 # D6: access code gate. Only active when APP_ACCESS_CODE is set (in Azure, from a Container Apps secret).
 ACCESS_CODE = os.environ.get("APP_ACCESS_CODE")
