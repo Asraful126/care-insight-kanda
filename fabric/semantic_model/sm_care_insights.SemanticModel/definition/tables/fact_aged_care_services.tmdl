@@ -1,6 +1,52 @@
 /// Grain: period end x program x region x care level. HCP is a stock, CHSP a flow: never add across programs.
 table fact_aged_care_services
 
+	/// People in a Home Care Package on 30 June (a stock). Never add to CHSP.
+	measure 'HCP people' =
+			// Region: the single aged-care region type in context if there is one (e.g. a PHN visual), otherwise SA3.
+			// PHN and ACPR cross state borders, so state totals by PHN/ACPR differ; SA3 = LGA in every state.
+			// Date: the latest period in context. Care level: Total unless care_level is filtered (levels add up).
+			VAR _careAll = NOT ISFILTERED ( fact_aged_care_services[care_level] )
+			RETURN
+				CALCULATE (
+					VAR _types = CALCULATETABLE ( VALUES ( dim_region[region_type] ), fact_aged_care_services )
+					VAR _type = IF ( COUNTROWS ( _types ) = 1, MAXX ( _types, dim_region[region_type] ), "SA3" )
+					VAR _date = MAX ( fact_aged_care_services[date_key] )
+					RETURN
+						CALCULATE (
+							SUM ( fact_aged_care_services[people] ),
+							KEEPFILTERS ( dim_region[region_type] = _type ),
+							KEEPFILTERS ( dim_date[date_key] = _date ),
+							KEEPFILTERS ( fact_aged_care_services[is_all_care_level] = _careAll )
+						),
+					KEEPFILTERS ( fact_aged_care_services[program] = "HCP" )
+				)
+		formatString: #,0
+		displayFolder: Aged care
+
+	/// Distinct people served by CHSP during the financial year (a flow). Never add to HCP.
+	measure 'CHSP people served' =
+			// Region: the single aged-care region type in context if there is one (e.g. a PHN visual), otherwise SA3.
+			// PHN and ACPR cross state borders, so state totals by PHN/ACPR differ; SA3 = LGA in every state.
+			// Date: the latest period in context. Care level: Total unless care_level is filtered (levels add up).
+			VAR _careAll = NOT ISFILTERED ( fact_aged_care_services[care_level] )
+			RETURN
+				CALCULATE (
+					VAR _types = CALCULATETABLE ( VALUES ( dim_region[region_type] ), fact_aged_care_services )
+					VAR _type = IF ( COUNTROWS ( _types ) = 1, MAXX ( _types, dim_region[region_type] ), "SA3" )
+					VAR _date = MAX ( fact_aged_care_services[date_key] )
+					RETURN
+						CALCULATE (
+							SUM ( fact_aged_care_services[people] ),
+							KEEPFILTERS ( dim_region[region_type] = _type ),
+							KEEPFILTERS ( dim_date[date_key] = _date ),
+							KEEPFILTERS ( fact_aged_care_services[is_all_care_level] = _careAll )
+						),
+					KEEPFILTERS ( fact_aged_care_services[program] = "CHSP" )
+				)
+		formatString: #,0
+		displayFolder: Aged care
+
 	column date_key
 		dataType: int64
 		isHidden

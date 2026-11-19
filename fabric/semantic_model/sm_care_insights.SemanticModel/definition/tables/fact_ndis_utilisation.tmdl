@@ -1,6 +1,35 @@
 /// Same grain as plans plus SIL/SDA. Utilisation is a published fraction: never sum or average.
 table fact_ndis_utilisation
 
+	/// Share of committed plan budget used, as published. No weights are published, so it is never summed or
+	/// averaged: BLANK when the slice covers more than one published cell. SIL/SDA works like a cohort dimension.
+	measure 'Plan utilisation %' =
+			// Published-cell rule (data dictionary decision 2):
+			// - cohort dimension not filtered -> its ALL row; filtered -> its detail rows
+			// - region: the coarsest region type in the current filter context (national when nothing is filtered)
+			// - date: the latest report date in context (counts are quarter-end snapshots, never added over time)
+			VAR _dgAll = NOT ISFILTERED ( dim_disability_group )
+			VAR _abAll = NOT ISFILTERED ( dim_age_band )
+			VAR _scAll = NOT ISFILTERED ( dim_support_class )
+			VAR _silAll = NOT ISFILTERED ( fact_ndis_utilisation[sil_or_sda] )
+			VAR _level = CALCULATE ( MIN ( dim_region[region_type_order] ), fact_ndis_utilisation )
+			VAR _date = MAX ( fact_ndis_utilisation[date_key] )
+			VAR _cells =
+				CALCULATETABLE (
+					fact_ndis_utilisation,
+					KEEPFILTERS ( dim_region[region_type_order] = _level ),
+					KEEPFILTERS ( dim_date[date_key] = _date ),
+					KEEPFILTERS ( dim_disability_group[is_all] = _dgAll ),
+					KEEPFILTERS ( dim_age_band[is_all] = _abAll ),
+					KEEPFILTERS ( dim_support_class[is_all] = _scAll ),
+					KEEPFILTERS ( fact_ndis_utilisation[is_all_sil_or_sda] = _silAll )
+				)
+			RETURN
+				// Not additive: show only when exactly one published cell matches; several cells -> BLANK
+				IF ( COUNTROWS ( _cells ) = 1, MAXX ( _cells, fact_ndis_utilisation[utilisation] ) )
+		formatString: 0.0%
+		displayFolder: NDIS
+
 	column date_key
 		dataType: int64
 		isHidden
