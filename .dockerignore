@@ -3,4 +3,5 @@
 *
 !requirements.txt
 !assistant/
+!data/index/
 assistant/__pycache__/

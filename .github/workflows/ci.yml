@@ -1,5 +1,5 @@
 # CI/CD for the Care Insights assistant.
-# - Every pull request and push to main: unit tests.
+# - Every pull request and push to main: unit tests. Pull requests also build the image (no push).
 # - Push to main (a merged PR): build the image, push it to GHCR tagged with the commit SHA, deploy it to
 #   Azure Container Apps, and check the new revision answers.
 # Azure sign-in is OIDC (decision D8): GitHub proves "a run on main of this repo" to Entra and gets a
@@ -21,6 +21,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,10 +33,20 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m pytest tests -q
 
+  build:
+    # PRs only: prove the image still builds before anything reaches main.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t care-insights:pr .
+
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: production
     permissions:
       contents: read
