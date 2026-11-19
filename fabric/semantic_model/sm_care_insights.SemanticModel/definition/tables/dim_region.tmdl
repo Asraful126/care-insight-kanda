@@ -1,0 +1,73 @@
+/// One row per region type x code. state_code is the RLS key (AUS = national row).
+table dim_region
+
+	column region_key
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: region_key
+
+	column region_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_type
+		sortByColumn: region_type_order
+
+	column region_edition
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_edition
+
+	column region_code
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_code
+
+	column region_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region_name
+
+	column state_code
+		dataType: string
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column state_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: state_name
+
+	column region_type_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: region_type_order
+
+	column parent_region_key
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: parent_region_key
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition dim_region = entity
+		mode: directLake
+		source
+			entityName: dim_region
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+

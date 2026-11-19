@@ -1,0 +1,94 @@
+/// Grain: period end x program x region x care level. HCP is a stock, CHSP a flow: never add across programs.
+table fact_aged_care_services
+
+	column date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column period_end_date
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		summarizeBy: none
+		sourceColumn: period_end_date
+
+	column period_label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: period_label
+
+	column program
+		dataType: string
+		summarizeBy: none
+		sourceColumn: program
+
+	column program_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: program_name
+
+	column count_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: count_type
+
+	column region_key
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: region_key
+
+	column care_level
+		dataType: string
+		summarizeBy: none
+		sourceColumn: care_level
+
+	column is_all_care_level
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_all_care_level
+
+	column people
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: people
+
+	column people_is_suppressed
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: people_is_suppressed
+
+	column people_upper_bound
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: people_upper_bound
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition fact_aged_care_services = entity
+		mode: directLake
+		source
+			entityName: fact_aged_care_services
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+

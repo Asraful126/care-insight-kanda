@@ -1,0 +1,42 @@
+/// NDIS support class, shared by plans, utilisation and providers. Keeps the publisher's ALL member (is_all).
+table dim_support_class
+
+	column support_class
+		dataType: string
+		summarizeBy: none
+		sourceColumn: support_class
+		sortByColumn: sort_order
+
+	column is_all
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_all
+
+	column sort_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: sort_order
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition dim_support_class = entity
+		mode: directLake
+		source
+			entityName: dim_support_class
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+

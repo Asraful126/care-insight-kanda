@@ -1,0 +1,19 @@
+/// Care Insights semantic model: Direct Lake on OneLake over lh_care_insights.kanda_gold.
+/// Facts hold both the publisher's ALL subtotals and detail rows, so a plain SUM double-counts.
+/// Implicit measures are disabled and raw value columns hidden: every number goes through a DAX measure.
+model Model
+	culture: en-AU
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-AU
+	discourageImplicitMeasures
+
+ref table dim_date
+ref table dim_region
+ref table dim_disability_group
+ref table dim_age_band
+ref table dim_support_class
+ref table fact_ndis_plans
+ref table fact_ndis_utilisation
+ref table fact_ndis_providers
+ref table fact_aged_care_services
+
