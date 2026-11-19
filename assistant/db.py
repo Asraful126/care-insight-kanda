@@ -14,7 +14,7 @@ import struct
 from pathlib import Path
 
 import pyodbc
-from azure.identity import AzureCliCredential, ClientSecretCredential
+from azure.identity import AzureCliCredential, ClientSecretCredential, ManagedIdentityCredential
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +30,9 @@ def _credential(identity: str):
     if identity == "admin":
         return AzureCliCredential(tenant_id=tenant)
     if identity == "reader":
+        # D4: in Azure the app signs in with its managed identity (no secret). Locally: the SP secret in .env.
+        if os.environ.get("USE_MANAGED_IDENTITY") == "1":
+            return ManagedIdentityCredential()
         return ClientSecretCredential(
             tenant_id=tenant,
             client_id=os.environ["READER_CLIENT_ID"],

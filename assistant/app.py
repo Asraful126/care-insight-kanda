@@ -6,7 +6,9 @@ Every question, tool call and answer is appended to logs/assistant.jsonl by assi
 
 from __future__ import annotations
 
+import hmac
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -22,6 +24,17 @@ st.caption(
     "Answers from public NDIS and aged care statistics (read-only SQL over the gold layer) and the NDIS "
     "Practice Standards / Strengthened Aged Care Quality Standards. Public aggregate data only."
 )
+
+# D6: access code gate. Only active when APP_ACCESS_CODE is set (in Azure, from a Container Apps secret).
+ACCESS_CODE = os.environ.get("APP_ACCESS_CODE")
+if ACCESS_CODE and not st.session_state.get("authorised"):
+    code = st.text_input("Access code", type="password")
+    if code and hmac.compare_digest(code, ACCESS_CODE):  # constant-time comparison
+        st.session_state.authorised = True
+        st.rerun()
+    if code:
+        st.error("Wrong access code.")
+    st.stop()  # nothing below runs, so no Claude or SQL calls without the code
 
 if "assistant" not in st.session_state:
     st.session_state.assistant = Assistant()
