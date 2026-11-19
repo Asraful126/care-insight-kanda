@@ -27,3 +27,6 @@ Thumbs.db
 
 # Eval run details (full answers); eval/results/latest.md is committed
 eval/results/runs/
+
+# RLS user -> state mapping (tenant UPNs); config/security_user_state.example.csv is committed
+config/security_user_state.csv

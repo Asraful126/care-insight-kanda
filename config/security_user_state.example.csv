@@ -1,0 +1,4 @@
+user_principal_name,state_code
+rls.qld@<tenant-domain>,QLD
+rls.nswvic@<tenant-domain>,NSW
+rls.nswvic@<tenant-domain>,VIC

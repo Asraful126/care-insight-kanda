@@ -16,4 +16,7 @@ ref table fact_ndis_plans
 ref table fact_ndis_utilisation
 ref table fact_ndis_providers
 ref table fact_aged_care_services
+ref table security_user_state
+
+ref role 'State access'
 
