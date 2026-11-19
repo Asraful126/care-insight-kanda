@@ -1,0 +1,37 @@
+/// RLS mapping: one row per user x state (kanda_gold.security_user_state, loaded by security_load.py). Hidden.
+/// No relationships: the State access role reads it with USERPRINCIPALNAME().
+table security_user_state
+	isHidden
+
+	column user_principal_name
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: user_principal_name
+
+	column state_code
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: state_code
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition security_user_state = entity
+		mode: directLake
+		source
+			entityName: security_user_state
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+

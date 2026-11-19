@@ -201,6 +201,19 @@ Grain: period end × program × region × care level. Regions are LGA, SA3, ACPR
 | `is_all_care_level` | boolean | HCP `Total` and all CHSP rows |
 | `people` (+ `_is_suppressed`, `_upper_bound`) | int | `n.p.` → NULL and suppressed. Records with no usable address are excluded at the source, so region sums are slightly below national figures |
 
+### `security_user_state`
+Row-level security mapping, loaded from `Files/security/user_state.csv` by `fabric/notebooks/security_load.py`.
+Grain: user × state. Read only by the semantic model's `State access` role. It contains e-mail addresses, so it's not
+exposed to the assistant: its service principal is denied `kanda_gold` and reads only the `kanda_assistant` views.
+
+| Column | Type | Notes |
+|---|---|---|
+| `user_principal_name` | string | lower-case UPN; matched to `USERPRINCIPALNAME()` |
+| `state_code` | string | a STATE region's `state_code`. `AUS` is refused, so state users don't see national rows |
+
+A user with no row sees no data (deny by default). The load fails, rather than loading, on a malformed UPN, an
+unknown or refused state, a blank or a duplicate.
+
 ### Logs
 | Table | One row per |
 |---|---|

@@ -1,0 +1,21 @@
+/// Dynamic RLS (decision D3): a member sees only the states mapped to them in security_user_state.
+/// dim_region[state_code] is on every region row, so this one filter reaches every fact. National rows
+/// (AUS) are never mapped, so state users don't see them. No mapping row = no data (deny by default).
+/// Workspace Admin/Member/Contributor bypass RLS: state users get Read on the model only.
+/// Members are not part of the model definition (the service drops them on import): the group
+/// sg-care-insights-state-users is added to this role once in the service (Security), see BUILD-GUIDE 5.5.
+/// security_user_state is filtered to the user's own rows, so nobody sees who else has access.
+role 'State access'
+	modelPermission: read
+
+	tablePermission dim_region =
+			VAR _states =
+				CALCULATETABLE (
+					VALUES ( security_user_state[state_code] ),
+					security_user_state[user_principal_name] = USERPRINCIPALNAME ()
+				)
+			RETURN
+				dim_region[state_code] IN _states
+
+	tablePermission security_user_state = security_user_state[user_principal_name] = USERPRINCIPALNAME ()
+
