@@ -25,10 +25,11 @@ COPY assistant/ assistant/
 
 # D10 (a): download the two public policy PDFs, check them against the checksums in data/raw/MANIFEST.tsv,
 # and build the index. This also downloads the embedding model into the image, so there's no download at startup.
+# HTTP/1.1 and retries: from CI runners the government sites reset HTTP/2 streams (curl exit 92).
 RUN mkdir -p data/raw/policy \
- && curl -fsSL -o data/raw/policy/ndis_practice_standards_v4.pdf \
+ && curl -fsSL --http1.1 --retry 3 --retry-all-errors --retry-delay 5 -o data/raw/policy/ndis_practice_standards_v4.pdf \
       https://www.ndiscommission.gov.au/sites/default/files/2024-10/ndis-practice-standards-and-quality-indicators.pdf \
- && curl -fsSL -o data/raw/policy/strengthened_aged_care_quality_standards.pdf \
+ && curl -fsSL --http1.1 --retry 3 --retry-all-errors --retry-delay 5 -o data/raw/policy/strengthened_aged_care_quality_standards.pdf \
       https://www.health.gov.au/sites/default/files/2026-08/strengthened-aged-care-quality-standards_0.pdf \
  && printf '%s  %s\n' \
       4b32e0bf1a6626b42c27d831d97ff26bca751cf15aed5fa8601657845240d09d data/raw/policy/ndis_practice_standards_v4.pdf \
