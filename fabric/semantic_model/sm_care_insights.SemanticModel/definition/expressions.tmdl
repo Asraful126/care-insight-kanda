@@ -1,0 +1,8 @@
+/// Direct Lake on OneLake: reads the Delta tables in OneLake directly (no SQL endpoint, no DirectQuery fallback).
+/// {{WORKSPACE_ID}} and {{LAKEHOUSE_ID}} are filled in by scripts/deploy_semantic_model.py, so no IDs are committed.
+expression 'DirectLake - lh_care_insights' =
+		let
+		    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/{{WORKSPACE_ID}}/{{LAKEHOUSE_ID}}", [HierarchicalNavigation=true])
+		in
+		    Source
+

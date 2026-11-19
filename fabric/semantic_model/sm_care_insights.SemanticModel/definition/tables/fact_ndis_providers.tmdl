@@ -1,0 +1,99 @@
+/// Same grain as plans. Provider counts are not additive across regions or cohorts.
+table fact_ndis_providers
+
+	column date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column report_date
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		summarizeBy: none
+		sourceColumn: report_date
+
+	column disability_group
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: disability_group
+
+	column age_band
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: age_band
+
+	column support_class
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: support_class
+
+	column is_all_disability_group
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_all_disability_group
+
+	column is_all_age_band
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_all_age_band
+
+	column is_all_support_class
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_all_support_class
+
+	column region_key
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: region_key
+
+	column provider_count
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: provider_count
+
+	column provider_count_is_suppressed
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: provider_count_is_suppressed
+
+	column provider_count_upper_bound
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: provider_count_upper_bound
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition fact_ndis_providers = entity
+		mode: directLake
+		source
+			entityName: fact_ndis_providers
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+

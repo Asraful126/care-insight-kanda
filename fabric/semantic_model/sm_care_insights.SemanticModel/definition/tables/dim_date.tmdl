@@ -1,0 +1,96 @@
+/// Calendar day, 1 Jul 2019 to 30 Jun 2027. Marked as the date table. Facts join on date_key (period end).
+table dim_date
+	dataCategory: Time
+
+	column date_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column date
+		dataType: dateTime
+		isKey
+		formatString: d mmm yyyy
+		summarizeBy: none
+		sourceColumn: date
+
+	column year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: year
+
+	column quarter
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quarter
+
+	column quarter_label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: quarter_label
+
+	column month
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: month
+
+	column month_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: month_name
+		sortByColumn: month
+
+	column year_month
+		dataType: string
+		summarizeBy: none
+		sourceColumn: year_month
+
+	column fy_end_year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: fy_end_year
+
+	column financial_year
+		dataType: string
+		summarizeBy: none
+		sourceColumn: financial_year
+
+	column is_quarter_end
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_quarter_end
+
+	column is_fy_end
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_fy_end
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition dim_date = entity
+		mode: directLake
+		source
+			entityName: dim_date
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+

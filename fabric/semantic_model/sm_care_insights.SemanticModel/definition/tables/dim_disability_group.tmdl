@@ -1,0 +1,42 @@
+/// NDIS disability group, shared by plans, utilisation and providers. Keeps the publisher's ALL member (is_all).
+table dim_disability_group
+
+	column disability_group
+		dataType: string
+		summarizeBy: none
+		sourceColumn: disability_group
+		sortByColumn: sort_order
+
+	column is_all
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_all
+
+	column sort_order
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: sort_order
+
+	column _gold_loaded_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: _gold_loaded_at
+
+	column _gold_run_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: _gold_run_id
+
+	partition dim_disability_group = entity
+		mode: directLake
+		source
+			entityName: dim_disability_group
+			schemaName: kanda_gold
+			expressionSource: 'DirectLake - lh_care_insights'
+
