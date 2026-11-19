@@ -2,10 +2,11 @@
 
 1. Refresh the SQL analytics endpoint metadata (it lags behind new Delta tables).
 2. Apply fabric/sql/assistant_views.sql (schema kanda_assistant, denormalised views).
-3. Give the reader service principal the workspace Viewer role (Fabric REST API).
-4. T-SQL: GRANT SELECT on kanda_assistant, DENY SELECT on kanda_gold / kanda_silver / kanda_bronze / dbo.
-   The views still work for the SP through ownership chaining (same owner as the tables), so the SP
-   reads gold only through the views.
+3. Give each reader identity the workspace Viewer role (Fabric REST API): the service principal
+   (local runs and eval) and, once deployed, the Container App's managed identity (D4: no secret).
+4. T-SQL for each: GRANT SELECT on kanda_assistant, DENY SELECT on kanda_gold / kanda_silver / kanda_bronze / dbo.
+   The views still work through ownership chaining (same owner as the tables), so the readers
+   see gold only through the views.
 5. Verify as the SP: every view is readable, every gold/silver/bronze table is denied, writes are denied.
 
 Usage: python scripts/setup_assistant_sql.py   (signed in to the project az profile as the kanda@ user)
@@ -28,6 +29,8 @@ from assistant.db import connect  # noqa: E402
 from fabric_client import Fabric  # noqa: E402
 
 SP_NAME = "sp-care-insights-reader"
+# D4: the deployed app reads with its system-assigned managed identity, whose name is the Container App's.
+APP_NAME, APP_RG = "ca-care-insights", "rg-care-insights"
 VIEW_SCHEMA = "kanda_assistant"
 DENIED_SCHEMAS = ["kanda_gold", "kanda_silver", "kanda_bronze", "dbo"]
 
@@ -58,26 +61,35 @@ def main() -> None:
     views = [r[0] for r in cur.fetchall()]
     print("   ", ", ".join(views))
 
-    print("3. workspace Viewer role for the SP")
-    sp_object_id = os.environ.get("READER_OBJECT_ID") or _sp_object_id()
-    existing = fab.request("GET", f"/workspaces/{ws}/roleAssignments").json()["value"]
-    if not any(a["principal"]["id"] == sp_object_id for a in existing):
-        fab.request(
-            "POST", f"/workspaces/{ws}/roleAssignments",
-            json={"principal": {"id": sp_object_id, "type": "ServicePrincipal"}, "role": "Viewer"},
-        )
-    role = next(a["role"] for a in fab.request("GET", f"/workspaces/{ws}/roleAssignments").json()["value"]
-                if a["principal"]["id"] == sp_object_id)
-    print(f"    {SP_NAME}: {role}")
-    if role != "Viewer":
-        raise SystemExit(f"SP has role {role}, expected Viewer only")
+    # Same access for every reader identity: the SP (local runs, eval) and the app's managed identity (Azure).
+    readers = [(SP_NAME, os.environ.get("READER_OBJECT_ID") or _sp_object_id())]
+    app_identity = _app_identity_object_id()
+    if app_identity:
+        readers.append((APP_NAME, app_identity))
+    else:
+        print(f"   (no Container App {APP_NAME} with a managed identity yet: SP only)")
+
+    print("3. workspace Viewer role for each reader identity")
+    for name, object_id in readers:
+        existing = fab.request("GET", f"/workspaces/{ws}/roleAssignments").json()["value"]
+        if not any(a["principal"]["id"] == object_id for a in existing):
+            fab.request(
+                "POST", f"/workspaces/{ws}/roleAssignments",
+                json={"principal": {"id": object_id, "type": "ServicePrincipal"}, "role": "Viewer"},
+            )
+        role = next(a["role"] for a in fab.request("GET", f"/workspaces/{ws}/roleAssignments").json()["value"]
+                    if a["principal"]["id"] == object_id)
+        print(f"    {name}: {role}")
+        if role != "Viewer":
+            raise SystemExit(f"{name} has role {role}, expected Viewer only")
 
     print("4. GRANT / DENY")
-    for stmt in [f"GRANT SELECT ON SCHEMA::{VIEW_SCHEMA} TO [{SP_NAME}]"] + [
-        f"DENY SELECT ON SCHEMA::{s} TO [{SP_NAME}]" for s in DENIED_SCHEMAS
-    ]:
-        cur.execute(stmt)
-        print("   ", stmt)
+    for name, _ in readers:
+        for stmt in [f"GRANT SELECT ON SCHEMA::{VIEW_SCHEMA} TO [{name}]"] + [
+            f"DENY SELECT ON SCHEMA::{s} TO [{name}]" for s in DENIED_SCHEMAS
+        ]:
+            cur.execute(stmt)
+            print("   ", stmt)
     admin.commit()
 
     print("5. verify as the SP")
@@ -109,6 +121,17 @@ def main() -> None:
     if failures:
         raise SystemExit("FAILED:\n  " + "\n  ".join(failures))
     print(f"    OK: {len(views)} views readable, {len(tables)} tables denied, DDL denied")
+
+
+def _app_identity_object_id() -> str | None:
+    """principalId of the Container App's system-assigned managed identity, or None if there's no app yet."""
+    import subprocess
+
+    out = subprocess.run(
+        ["az", "containerapp", "show", "-n", APP_NAME, "-g", APP_RG, "--query", "identity.principalId", "-o", "tsv"],
+        capture_output=True, text=True,
+    )
+    return out.stdout.strip() or None
 
 
 def _sp_object_id() -> str:

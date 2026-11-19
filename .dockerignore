@@ -1,0 +1,6 @@
+# Allow-list: only these reach the build context. Everything else (.env, .azure/, .venv/, logs/,
+# data/, .git/, notebooks) can never end up in the image by accident.
+*
+!requirements.txt
+!assistant/
+assistant/__pycache__/
