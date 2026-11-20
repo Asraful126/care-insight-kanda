@@ -35,7 +35,6 @@ This project builds that on public NDIS and aged care data:
 | Docker → Azure Container Apps (scale to zero, managed identity) | Done |
 | GitHub Actions CI/CD (tests, image build, deploy via OIDC) | Done: every merge to `main` deploys itself |
 | [Governance](docs/governance.md) and [architecture](docs/architecture.md) | Done |
-| Demo video | In progress |
 
 ## Architecture
 
