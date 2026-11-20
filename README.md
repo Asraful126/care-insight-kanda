@@ -238,7 +238,9 @@ Azure Container Apps and OIDC setup is in the deploy workflow ([.github/workflow
 
 ## Cost
 
-Total budget is about A$50, with an Azure budget alert at A$30.
+Total budget is about A$50, with an Azure budget alert at A$30. **Azure spend to 20 Nov 2026: A$5.03**, all of it
+the Fabric capacity; Container Apps and Log Analytics showed no charge.
+
 - **Fabric F2 capacity:** the main cost. It's paused between sessions.
 - **Container Apps:** scales to zero when nobody is using it.
 - **Log Analytics:** a few MB of logs, kept for 30 days.
